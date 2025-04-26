@@ -5,7 +5,7 @@ pipeline {
         DOCKERHUB_REPOSITORY = 'python-app'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
-        GITHUB_CREDENTIALS_ID = 'jenkins'
+        GITHUB_CREDENTIALS_ID = 'github-token'
         KUBECONFIG_CREDENTIALS_ID = 'kubeconfig'
     }
     stages {
