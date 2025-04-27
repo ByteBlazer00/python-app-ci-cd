@@ -43,7 +43,7 @@ pipeline {
                         kubectl get namespace python-app || kubectl create namespace python-app
 
                         # Replace image tag dynamically in deployment YAML if needed
-                        kubectl set image deployment/python-app python-app=${DOCKERHUB_USERNAME}/${DOCKERHUB_REPOSITORY}:${IMAGE_TAG} -n python-app || kubectl apply -f k8s/deployment.yaml
+                        kubectl set image deployment/python-app python-app=${DOCKERHUB_USERNAME}/${DOCKERHUB_REPOSITORY}:${IMAGE_TAG} -n python-app || kubectl apply -f k8s-deployment.yaml
                         '''
                     }
                 }
