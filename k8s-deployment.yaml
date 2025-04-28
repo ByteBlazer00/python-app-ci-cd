@@ -1,19 +1,10 @@
-# Namespace creation
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: python-app
----
-# Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: python-app
-  namespace: python-app
-  labels:
-    app: python-app
+  namespace: default
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: python-app
@@ -24,51 +15,13 @@ spec:
     spec:
       containers:
       - name: python-app
-        image: docker.io/rishi8669/python-app:latest   # NOTE: Jenkins will overwrite this image at runtime dynamically
+        image: rishi8669/python-app:latest
         ports:
         - containerPort: 5000
-        env:
-        - name: FLASK_ENV
-          value: "production"
         resources:
-          requests:
-            cpu: "100m"
-            memory: "128Mi"
           limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
             cpu: "200m"
             memory: "256Mi"
----
-# Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: python-app
-  namespace: python-app
-spec:
-  selector:
-    app: python-app
-  ports:
-  - port: 80
-    targetPort: 5000
-  type: ClusterIP
----
-# Ingress
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: python-app-ingress
-  namespace: python-app
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  rules:
-  - host: python-app.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: python-app
-            port:
-              number: 80
