@@ -41,13 +41,8 @@ pipeline {
                 withKubeConfig([credentialsId: env.KUBECONFIG_CREDENTIALS_ID]) {
                     script {
                         sh '''
-                        # Ensure namespace exists
                         kubectl get namespace python-app >/dev/null 2>&1 || kubectl create namespace python-app
-
-                        # Apply deployment
                         kubectl apply -f k8s/deployment.yaml
-
-                        # Update image with new tag
                         kubectl set image deployment/python-app python-app=docker.io/${DOCKERHUB_USERNAME}/${DOCKERHUB_REPOSITORY}:${IMAGE_TAG} -n python-app
                         '''
                     }
