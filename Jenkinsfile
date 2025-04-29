@@ -1,17 +1,19 @@
 pipeline {
     agent any
     environment {
-        DOCKERHUB_USERNAME = 'rishi8669'                // Your DockerHub username
-        DOCKERHUB_REPOSITORY = 'python-app'              // Your repo name
-        IMAGE_TAG = "${env.BUILD_NUMBER}"                // Jenkins Build Number as Docker tag
+        DOCKERHUB_USERNAME = 'rishi8669'
+        DOCKERHUB_REPOSITORY = 'python-app'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
         GITHUB_CREDENTIALS_ID = 'github-token'
         KUBECONFIG_CREDENTIALS_ID = 'kubeconfig'
     }
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                git credentialsId: env.GITHUB_CREDENTIALS_ID, url: 'https://github.com/ByteBlazer00/python-app-ci-cd.git', branch: 'main'
+                git credentialsId: env.GITHUB_CREDENTIALS_ID,
+                    url: 'https://github.com/ByteBlazer00/python-app-ci-cd.git',
+                    branch: 'main'
             }
         }
 
@@ -23,7 +25,7 @@ pipeline {
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Push to DockerHub') {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', env.DOCKERHUB_CREDENTIALS_ID) {
@@ -39,11 +41,14 @@ pipeline {
                 withKubeConfig([credentialsId: env.KUBECONFIG_CREDENTIALS_ID]) {
                     script {
                         sh '''
-                        # Create namespace if not exists
-                        kubectl get namespace python-app || kubectl create namespace python-app
+                        # Ensure namespace exists
+                        kubectl get namespace python-app >/dev/null 2>&1 || kubectl create namespace python-app
 
-                        # Replace image tag dynamically in deployment YAML if needed
-                        kubectl set image deployment/python-app python-app=${DOCKERHUB_USERNAME}/${DOCKERHUB_REPOSITORY}:${IMAGE_TAG} -n python-app || kubectl apply -f k8s-deployment.yaml
+                        # Apply deployment
+                        kubectl apply -f k8s/deployment.yaml
+
+                        # Update image with new tag
+                        kubectl set image deployment/python-app python-app=docker.io/${DOCKERHUB_USERNAME}/${DOCKERHUB_REPOSITORY}:${IMAGE_TAG} -n python-app
                         '''
                     }
                 }
