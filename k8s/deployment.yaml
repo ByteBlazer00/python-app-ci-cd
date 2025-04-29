@@ -1,4 +1,8 @@
-# k8s/deployment.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: python-app
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,17 +23,21 @@ spec:
         image: docker.io/rishi8669/python-app:latest
         ports:
         - containerPort: 5000
+        env:
+        - name: FLASK_ENV
+          value: "production"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: python-app
+  name: python-app-service
   namespace: python-app
 spec:
-  type: NodePort
   selector:
     app: python-app
+  type: NodePort
   ports:
-  - port: 80
+  - protocol: TCP
+    port: 80
     targetPort: 5000
-    nodePort: 30080
+    nodePort: 30007
