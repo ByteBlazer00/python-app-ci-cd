@@ -1,16 +1,5 @@
 pipeline {
   agent any
-
-  environment {
-    DOCKERHUB_USERNAME = 'rishi8669'
-    DOCKERHUB_REPOSITORY = 'python-app'
-    IMAGE_TAG = "${BUILD_NUMBER}"
-    DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
-    GITHUB_CREDENTIALS_ID = 'github-token'
-    KUBECONFIG_CREDENTIALS_ID = 'kubeconfig' // This should contain the admin.conf content
-    K8S_NAMESPACE = 'python-app'
-  }
-
   stages {
     stage('Checkout Code') {
       steps {
@@ -23,6 +12,7 @@ pipeline {
         script {
           dockerImage = docker.build("${DOCKERHUB_USERNAME}/${DOCKERHUB_REPOSITORY}:${IMAGE_TAG}")
         }
+
       }
     }
 
@@ -34,6 +24,7 @@ pipeline {
             dockerImage.push('latest')
           }
         }
+
       }
     }
 
@@ -42,12 +33,14 @@ pipeline {
         withKubeConfig(credentialsId: env.KUBECONFIG_CREDENTIALS_ID) {
           script {
             sh """
-              kubectl get ns ${K8S_NAMESPACE} || kubectl create ns ${K8S_NAMESPACE}
-              kubectl apply -n ${K8S_NAMESPACE} -f k8s/deployment.yaml
-              kubectl set image deployment/python-app python-app=docker.io/${DOCKERHUB_USERNAME}/${DOCKERHUB_REPOSITORY}:${IMAGE_TAG} -n ${K8S_NAMESPACE}
+            kubectl get ns ${K8S_NAMESPACE} || kubectl create ns ${K8S_NAMESPACE}
+            kubectl apply -n ${K8S_NAMESPACE} -f k8s/deployment.yaml
+            kubectl set image deployment/python-app python-app=docker.io/${DOCKERHUB_USERNAME}/${DOCKERHUB_REPOSITORY}:${IMAGE_TAG} -n ${K8S_NAMESPACE}
             """
           }
+
         }
+
       }
     }
 
@@ -56,7 +49,18 @@ pipeline {
         withKubeConfig(credentialsId: env.KUBECONFIG_CREDENTIALS_ID) {
           sh "kubectl rollout status deployment/python-app -n ${K8S_NAMESPACE}"
         }
+
       }
     }
+
+  }
+  environment {
+    DOCKERHUB_USERNAME = 'rishi8669'
+    DOCKERHUB_REPOSITORY = 'python-app'
+    IMAGE_TAG = "${BUILD_NUMBER}"
+    DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
+    GITHUB_CREDENTIALS_ID = 'github-token'
+    KUBECONFIG_CREDENTIALS_ID = 'kubeconfig'
+    K8S_NAMESPACE = 'python-app'
   }
 }
