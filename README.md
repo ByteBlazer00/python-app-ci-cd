@@ -36,15 +36,24 @@ The goal is to automate the build, test, and deployment process of a Python web 
 
 python-app-ci-cd/
 │
+
 ├── app/ # Python Flask application
+
 │ └── app.py
+
 │
 ├── Dockerfile # Docker configuration
+
 ├── deployment.yaml # Kubernetes deployment manifest
+
 ├── service.yaml # Kubernetes service manifest
+
 ├── jenkins/
+
 │ └── Jenkinsfile # Jenkins pipeline script
+
 ├── README.md # Project documentation
+
 └── .gitignore
 
 
